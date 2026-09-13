@@ -5,13 +5,13 @@ Sunrise/sunset are computed locally (NOAA algorithm, accurate to ~1 min).
 No network access, no extra packages, no root.
 
 Usage:
-  sun-theme apply [--force]   set light/dark for the current time (default)
-  sun-theme status            show today's sunrise/sunset and current mode
-  sun-theme install           copy to ~/.local/bin, write config + systemd timer
-  sun-theme uninstall         remove the timer and the copy in ~/.local/bin
+  auto-dark-mode apply [--force]  set light/dark for the current time (default)
+  auto-dark-mode status           show today's sunrise/sunset and current mode
+  auto-dark-mode install          copy to ~/.local/bin, write config + systemd timer
+  auto-dark-mode uninstall        remove the timer and the copy in ~/.local/bin
 
-Config: ~/.config/sun-theme/config.ini (created by `install`).
-Hooks:  executables in ~/.config/sun-theme/light.d/ and dark.d/ run after a switch.
+Config: ~/.config/auto-dark-mode/config.ini (created by `install`).
+Hooks:  executables in ~/.config/auto-dark-mode/light.d/ and dark.d/ run after a switch.
 """
 import configparser
 import math
@@ -23,10 +23,10 @@ import sys
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
-CONFIG_DIR = Path.home() / ".config" / "sun-theme"
-CONFIG = Path(os.environ.get("SUN_THEME_CONFIG", CONFIG_DIR / "config.ini"))
+CONFIG_DIR = Path.home() / ".config" / "auto-dark-mode"
+CONFIG = Path(os.environ.get("AUTO_DARK_MODE_CONFIG", CONFIG_DIR / "config.ini"))
 UNIT_DIR = Path.home() / ".config" / "systemd" / "user"
-BIN = Path.home() / ".local" / "bin" / "sun-theme"
+BIN = Path.home() / ".local" / "bin" / "auto-dark-mode"
 SCHEMA = "org.gnome.desktop.interface"
 
 DEFAULT_CONFIG = """\
@@ -54,7 +54,7 @@ Description=Switch GNOME light/dark mode by sunrise and sunset
 
 [Service]
 Type=oneshot
-ExecStart=%h/.local/bin/sun-theme apply
+ExecStart=%h/.local/bin/auto-dark-mode apply
 """
 
 TIMER = """\
@@ -139,7 +139,7 @@ def location(cfg):
 
 def load_config():
     if not CONFIG.exists():
-        sys.exit(f"{CONFIG} not found. Run `sun-theme install` or create it.")
+        sys.exit(f"{CONFIG} not found. Run `auto-dark-mode install` or create it.")
     cfg = configparser.ConfigParser()
     cfg.read(CONFIG)
     return cfg
@@ -192,7 +192,7 @@ def status(cfg):
     print("now:    ", now.astimezone().strftime(fmt))
     print("wanted: ", "light" if day else "dark")
     print("current:", gsettings("get", SCHEMA, "color-scheme"), flush=True)
-    subprocess.run(["systemctl", "--user", "--no-pager", "list-timers", "sun-theme.timer"])
+    subprocess.run(["systemctl", "--user", "--no-pager", "list-timers", "auto-dark-mode.timer"])
 
 
 def install():
@@ -206,17 +206,17 @@ def install():
         shutil.copy(__file__, BIN)
     BIN.chmod(0o755)
     UNIT_DIR.mkdir(parents=True, exist_ok=True)
-    (UNIT_DIR / "sun-theme.service").write_text(SERVICE)
-    (UNIT_DIR / "sun-theme.timer").write_text(TIMER)
+    (UNIT_DIR / "auto-dark-mode.service").write_text(SERVICE)
+    (UNIT_DIR / "auto-dark-mode.timer").write_text(TIMER)
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
-    subprocess.run(["systemctl", "--user", "enable", "--now", "sun-theme.timer"], check=True)
+    subprocess.run(["systemctl", "--user", "enable", "--now", "auto-dark-mode.timer"], check=True)
     apply(load_config(), force=True)
-    print("installed; check with: sun-theme status")
+    print("installed; check with: auto-dark-mode status")
 
 
 def uninstall():
-    subprocess.run(["systemctl", "--user", "disable", "--now", "sun-theme.timer"])
-    for name in ("sun-theme.service", "sun-theme.timer"):
+    subprocess.run(["systemctl", "--user", "disable", "--now", "auto-dark-mode.timer"])
+    for name in ("auto-dark-mode.service", "auto-dark-mode.timer"):
         (UNIT_DIR / name).unlink(missing_ok=True)
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     BIN.unlink(missing_ok=True)

@@ -11,16 +11,16 @@ root. Tested on Ubuntu 24.04 with GNOME 46.
 ## Install
 
 ```sh
-./sun-theme.py install
+./auto-dark-mode.py install
 ```
 
-This copies the script to `~/.local/bin/sun-theme`, writes
-`~/.config/sun-theme/config.ini`, and enables a systemd user timer that checks
+This copies the script to `~/.local/bin/auto-dark-mode`, writes
+`~/.config/auto-dark-mode/config.ini`, and enables a systemd user timer that checks
 every 5 minutes and at login.
 
 ## Configure
 
-Edit `~/.config/sun-theme/config.ini`:
+Edit `~/.config/auto-dark-mode/config.ini`:
 
 ```ini
 [location]
@@ -48,40 +48,40 @@ coordinates if you want. Available themes: `ls /usr/share/themes /usr/share/icon
 ## Check
 
 ```sh
-sun-theme status
+auto-dark-mode status
 ```
 
 Prints the location in use, today's sunrise and sunset, the wanted and current
 mode, and the timer's next run. To apply a config change right away:
 
 ```sh
-sun-theme apply --force
+auto-dark-mode apply --force
 ```
 
 ## Hooks
 
-Executables in `~/.config/sun-theme/light.d/` and `~/.config/sun-theme/dark.d/`
+Executables in `~/.config/auto-dark-mode/light.d/` and `~/.config/auto-dark-mode/dark.d/`
 run after each switch, for apps that do not follow the system style. Example
 for GNOME Terminal's window chrome:
 
 ```sh
-mkdir -p ~/.config/sun-theme/light.d ~/.config/sun-theme/dark.d
-printf '#!/bin/sh\ngsettings set org.gnome.Terminal.Legacy.Settings theme-variant light\n' > ~/.config/sun-theme/light.d/terminal
-printf '#!/bin/sh\ngsettings set org.gnome.Terminal.Legacy.Settings theme-variant dark\n' > ~/.config/sun-theme/dark.d/terminal
-chmod +x ~/.config/sun-theme/*.d/terminal
+mkdir -p ~/.config/auto-dark-mode/light.d ~/.config/auto-dark-mode/dark.d
+printf '#!/bin/sh\ngsettings set org.gnome.Terminal.Legacy.Settings theme-variant light\n' > ~/.config/auto-dark-mode/light.d/terminal
+printf '#!/bin/sh\ngsettings set org.gnome.Terminal.Legacy.Settings theme-variant dark\n' > ~/.config/auto-dark-mode/dark.d/terminal
+chmod +x ~/.config/auto-dark-mode/*.d/terminal
 ```
 
 ## Uninstall
 
 ```sh
-sun-theme uninstall
+auto-dark-mode uninstall
 ```
 
-Removes the timer and `~/.local/bin/sun-theme`. The config directory is left in
+Removes the timer and `~/.local/bin/auto-dark-mode`. The config directory is left in
 place.
 
 ## Logs
 
 ```sh
-journalctl --user -u sun-theme.service
+journalctl --user -u auto-dark-mode.service
 ```
